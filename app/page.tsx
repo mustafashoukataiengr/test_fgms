@@ -9,7 +9,10 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
 
   const handleAttack = async () => {
-    if (!file) return alert("Please upload an image");
+    if (!file) {
+      alert("Please upload an image");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("file", file);
@@ -18,16 +21,19 @@ export default function Home() {
     setLoading(true);
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-const res = await fetch(`${baseUrl}/attack`,  {
+      const res = await fetch("http://13.61.10.213:8000/attack", {
         method: "POST",
         body: formData,
       });
 
+      if (!res.ok) {
+        throw new Error("Server error");
+      }
+
       const data = await res.json();
       setResult(data);
     } catch (err) {
+      console.error(err);
       alert("Error connecting to backend");
     }
 
@@ -67,11 +73,17 @@ const res = await fetch(`${baseUrl}/attack`,  {
       {result && (
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-2">Results</h2>
+
           <p>Clean Prediction: {result.clean_prediction}</p>
           <p>Adversarial Prediction: {result.adversarial_prediction}</p>
+
           <p>
             Attack Success:{" "}
-            <span className={result.attack_success ? "text-red-600" : "text-green-600"}>
+            <span
+              className={
+                result.attack_success ? "text-red-600" : "text-green-600"
+              }
+            >
               {result.attack_success ? "Yes" : "No"}
             </span>
           </p>
